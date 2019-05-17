@@ -37,6 +37,22 @@ class Gokuai:
         return base64.b64encode(
             hmac.new(settings.GOKUAI_SETTINGS["client_secret"].encode('utf-8'), data, hashlib.sha1).digest())
 
+    def validate_sign(self, postdata):
+        """
+        验证签名
+        :param postdata: 
+        :return: 
+        """
+        origin_sign = postdata["sign"].encode('utf-8')
+        postdata = postdata.dict()
+        postdata.pop("sign")
+        data = sorted(postdata.items(), key=lambda d: d[0])
+        data = [str(i[1]) for i in data]
+        data = '\n'.join(data).encode('utf-8')
+        true_sign = base64.b64encode(
+            hmac.new(settings.GOKUAI_SETTINGS["client_secret"].encode('utf-8'), data, hashlib.sha1).digest())
+        return origin_sign == true_sign
+
     def gokuai_reuquest(self, method="POST", url="", **kwargs):
         """
         发送请求
