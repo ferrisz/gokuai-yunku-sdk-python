@@ -15,3 +15,5 @@ GOKUAI_SETTINGS = {
 ```
 gokuai = Gokuai()
 ```
+
+请求参数中不传入 client_id dateline sign
