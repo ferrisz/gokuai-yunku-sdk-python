@@ -40,8 +40,8 @@ class Gokuai:
     def validate_sign(self, postdata):
         """
         验证签名
-        :param postdata: 
-        :return: 
+        :param postdata:
+        :return:
         """
         origin_sign = postdata["sign"].encode('utf-8')
         postdata = postdata.dict()
@@ -465,4 +465,305 @@ class Gokuai:
         :return:
         """
         url = "/m-open/1/org/log"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+    
+
+
+class GokuaiFile:
+    org_client_secret = ""
+    org_client_id = ""
+
+    def __init__(self, org_client_secret, org_client_id):
+        self.org_client_secret = org_client_secret
+        self.org_client_id = org_client_id
+
+    def gokuai_sign(self, **kwargs):
+        """
+        获取签名
+        :param kwargs:
+        :return:
+        """
+        if not kwargs.get("org_client_id"):
+            kwargs["org_client_id"] = self.org_client_id
+        data = sorted(kwargs.items(), key=lambda d: d[0])
+        data = [str(i[1]) for i in data]
+        data = '\n'.join(data).encode('utf-8')
+        return base64.b64encode(
+            hmac.new(self.org_client_secret.encode('utf-8'), data, hashlib.sha1).digest())
+
+    def validate_sign(self, postdata):
+        """
+        验证签名
+        :param postdata:
+        :return:
+        """
+        origin_sign = postdata["sign"].encode('utf-8')
+        postdata = postdata.dict()
+        postdata.pop("sign")
+        data = sorted(postdata.items(), key=lambda d: d[0])
+        data = [str(i[1]) for i in data]
+        data = '\n'.join(data).encode('utf-8')
+        true_sign = base64.b64encode(
+            hmac.new(self.org_client_secret.encode('utf-8'), data, hashlib.sha1).digest())
+        return origin_sign == true_sign
+
+    def gokuai_reuquest(self, method="POST", url="", **kwargs):
+        """
+        发送请求
+        :param method:
+        :param url:
+        :param kwargs:
+        :return:
+        """
+        if method == "POST":
+            req_url = settings.GOKUAI_SETTINGS["host"] + url
+            t = time.time()
+            kwargs["dateline"] = int(t)
+            kwargs['sign'] = self.gokuai_sign(**kwargs)
+            if not kwargs.get("org_client_id"):
+                kwargs["org_client_id"] = self.org_client_id
+            r = requests.post(req_url, data=kwargs)
+            return json.loads(r.text)
+
+    def file_ls(self, **kwargs):
+        """
+        文件列表
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/ls"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_updates(self, **kwargs):
+        """
+        文件最近更新列表
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/updates"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_updates_count(self, **kwargs):
+        """
+        文件更新数量
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/updates_count"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_download_url(self, **kwargs):
+        """
+        文件下载地址
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/download_url"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_preview_url(self, **kwargs):
+        """
+        文件预览地址
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/preview_url"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_info(self, **kwargs):
+        """
+        文件（夹）信息
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/info"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_search(self, **kwargs):
+        """
+        文件搜索
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/search"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_create_folder(self, **kwargs):
+        """
+        创建文件夹
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/create_folder"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_create_file(self, **kwargs):
+        """
+        上传文件 - 请求上传
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/create_file"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_upload_servers(self, **kwargs):
+        """
+        网页上传 - 获取上传服务器
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/upload_servers"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_copy(self, **kwargs):
+        """
+        复制文件（夹）
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/copy"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_mcopy(self, **kwargs):
+        """
+        高级复制文件（夹）
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/mcopy"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_del(self, **kwargs):
+        """
+        删除文件（夹）
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/del"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_recycle(self, **kwargs):
+        """
+        回收站
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/recycle"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_recover(self, **kwargs):
+        """
+        恢复已删除文件
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/recover"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_del_completely(self, **kwargs):
+        """
+        彻底删除文件（夹）
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/del_completely"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_move(self, **kwargs):
+        """
+        移动文件（夹）
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/move"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_history(self, **kwargs):
+        """
+        获取文件历史
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/history"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_link(self, **kwargs):
+        """
+        获取文件外链
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/link"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_link_close(self, **kwargs):
+        """
+        关闭文件外链
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/link_close"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_links(self, **kwargs):
+        """
+        获取开启外链的文件列表
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/links"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_get_all_permission(self, **kwargs):
+        """
+        获取文件夹所有权限
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/get_all_permission"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_file_permission(self, **kwargs):
+        """
+        修改文件夹权限
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/file_permission"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_get_permission(self, **kwargs):
+        """
+        获取用户在文件夹的权限
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/get_permission"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_add_tag(self, **kwargs):
+        """
+        添加标签
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/add_tag"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_del_tag(self, **kwargs):
+        """
+        删除标签
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/del_tag"
+        return self.gokuai_reuquest(method="POST", url=url, **kwargs)
+
+    def file_stat(self, **kwargs):
+        """
+        统计信息
+        :param kwargs:
+        :return:
+        """
+        url = "/m-open/1/file/stat"
         return self.gokuai_reuquest(method="POST", url=url, **kwargs)
